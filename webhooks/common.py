@@ -1,9 +1,9 @@
 import re
 import hashlib
 import os
-import requests
+import aiohttp
 
-def push_mail(mail_image, mail_raw, subject="[Blank subject]", sender="[Blank sender]", sent=None):
+async def push_mail(mail_image, mail_raw, subject="[Blank subject]", sender="[Blank sender]", sent=None):
     # Sent date
     if not sent:
         sent = "[Missing mail time]"
@@ -20,27 +20,28 @@ def push_mail(mail_image, mail_raw, subject="[Blank subject]", sender="[Blank se
 
     avatar_url = "https://www.gravatar.com/avatar/{from_hash}?default=identicon&s=256"
 
-    r = requests.post(os.environ["DISCORD_WEBHOOK"], json={
-        "avatar_url": avatar_url,
-        "embeds": [
-            {
-                # Ass bleach pink
-                "color": 0xffb9ec,
-                "title": subject,
-                "url": mail_raw,
-                "author": {
-                    "name": sender,
-                    "url": mail_raw
-                },
-                "image": {
-                    "url": mail_image,
-                    "width": 1024
-                },
-                "footer": {
-                    "text": sent
+    async with aiohttp.ClientSession() as session:
+        r = await session.post(os.environ["DISCORD_WEBHOOK"], json={
+            "avatar_url": avatar_url,
+            "embeds": [
+                {
+                    # Ass bleach pink
+                    "color": 0xffb9ec,
+                    "title": subject,
+                    "url": mail_raw,
+                    "author": {
+                        "name": sender,
+                        "url": mail_raw
+                    },
+                    "image": {
+                        "url": mail_image,
+                        "width": 1024
+                    },
+                    "footer": {
+                        "text": sent
+                    }
                 }
-            }
-        ]
-    })
+            ]
+        })
 
-    return r.status_code, r.text
+    return r.status, await r.text()
