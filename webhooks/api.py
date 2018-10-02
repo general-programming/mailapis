@@ -59,7 +59,7 @@ async def inbound_post(request):
             mail_raw = reply["raw_url"]
 
     # Push to Discord
-    push_status, push_response = push_mail(
+    push_status, push_response = await push_mail(
         mail_image=mail_image,
         mail_raw=mail_raw,
         subject=data.get("subject", None),
