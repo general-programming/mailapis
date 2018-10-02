@@ -11,7 +11,7 @@ services:
         condition: on-failure
 
   render:
-    build: render
+    build: render_api
     image: registry.nepeat.com/mailapi_render
     environment:
       REDIS_HOST: redis
