@@ -2,10 +2,20 @@ import tempfile
 import json
 import hashlib
 import os
+import logging
 
 from aiohttp import web
 from b2blaze import B2
 from pyppeteer import launch as launch_pyppeteer
+
+# Logging configuration
+if "DEBUG_FLOOD" in os.environ:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
+
+logging.getLogger("asyncio").setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 HEIGHT_PADDING = 25
 CDN_BASE = "https://" + os.environ["CDN_URL"] + "/file/" + os.environ["B2_BUCKET"] + "/mailrender_api/"
@@ -101,5 +111,7 @@ async def render_post(request):
 
 app = web.Application()
 app.add_routes(routes)
+
+log.info("Render API started!")
 
 web.run_app(app)

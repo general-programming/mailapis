@@ -1,11 +1,20 @@
-import json
 import os
+import logging
 import email
 import email.policy
 
 from aiohttp import web, ClientSession
 
 from common import push_mail
+
+# Logging configuration
+if "DEBUG_FLOOD" in os.environ:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
+
+logging.getLogger("asyncio").setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 routes = web.RouteTableDef()
 
@@ -17,7 +26,7 @@ async def rootpage(request):
 async def inbound_post(request):
     # Parse data.
     data = await request.post()
-    print(data, flush=True)
+    log.debug(data)
 
     # Parse mail.
     message = email.message_from_string(data["email"], policy=email.policy.default)
@@ -30,7 +39,7 @@ async def inbound_post(request):
                 break
 
     if not mail_body:
-        print("Unable to find mail body.", flush=True)
+        log.error("Unable to find mail body.")
         return web.json_response("ok")
 
     try:
@@ -48,11 +57,11 @@ async def inbound_post(request):
                 reply = await response.json()
             except:
                 reply = await response.text()
-                print(f"Error parsing response from render API: {reply}", flush=True)
+                log.error("Error parsing response from render API: %s", reply)
                 return web.json_response({"error": "bad_parse"})
 
             if "error" in reply:
-                print(f"Got error from render API: {reply['error']}", flush=True)
+                log.error("Got error from render API: %s", reply["error"])
                 return web.json_response({"error": reply["error"]})
 
             mail_image = reply["image_url"]
@@ -68,12 +77,12 @@ async def inbound_post(request):
     )
 
     if push_status != 204:
-        print("Error from Discord: ", push_response, flush=True)
+        log.error("Error from Discord: %s", push_response)
 
     return web.json_response("ok")
 
 app = web.Application()
 app.add_routes(routes)
 
-print("Webhook API started!")
+log.info("Webhook API started!")
 web.run_app(app)
