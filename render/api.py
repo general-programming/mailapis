@@ -117,7 +117,8 @@ async def render_post(request):
         # Upload the raw HTML and the screenshot.
         await upload_file(page_html, f"mailrender_api/{page_hash}.html")
         async with aiofiles.open(rendered_path, "rb") as image:
-            await upload_file(await image.read(), f"mailrender_api/{page_hash}.jpg")
+            image_data = await image.read()
+            await upload_file(image_data, f"mailrender_api/{page_hash}.jpg")
 
         return web.json_response({
             "image_url": CDN_BASE + page_hash + ".jpg",
