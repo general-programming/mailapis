@@ -1,7 +1,6 @@
 import os
 import asyncio
 from pyppeteer import launch
-import requests
 import json
 import datetime
 

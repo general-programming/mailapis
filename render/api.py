@@ -1,9 +1,14 @@
+import asyncio
 import tempfile
 import json
 import hashlib
 import os
 import logging
+import functools
 
+from concurrent.futures import ThreadPoolExecutor
+
+import aiofiles
 from aiohttp import web
 from b2blaze import B2
 from pyppeteer import launch as launch_pyppeteer
@@ -17,16 +22,26 @@ else:
 logging.getLogger("asyncio").setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
 
+# TODO: Move these constants somewhere.
 HEIGHT_PADDING = 25
 CDN_BASE = "https://" + os.environ["CDN_URL"] + "/file/" + os.environ["B2_BUCKET"] + "/mailrender_api/"
 
+# B2 utility
 b2 = B2()
 bucket = b2.buckets.get(os.environ["B2_BUCKET"])
+
+# Service
 routes = web.RouteTableDef()
+executor = ThreadPoolExecutor(max_workers=4)
 
 @routes.get('/')
 async def rootpage(request):
     return web.Response(text="mail render api")
+
+async def upload_file(data: bytes, file_name: str):
+    loop = asyncio.get_running_loop()
+
+    return await loop.run_in_executor(executor, functools.partial(bucket.files.upload, contents=data, file_name=file_name))
 
 @routes.post('/render')
 async def render_post(request):
@@ -100,9 +115,9 @@ async def render_post(request):
         await browser.close()
 
         # Upload the raw HTML and the screenshot.
-        upload_html = bucket.files.upload(contents=page_html, file_name=f"mailrender_api/{page_hash}.html")
-        with open(rendered_path, "rb") as image:
-            upload_image = bucket.files.upload(contents=image.read(), file_name=f"mailrender_api/{page_hash}.jpg")
+        await upload_file(page_html, f"mailrender_api/{page_hash}.html")
+        async with aiofiles.open(rendered_path, "rb") as image:
+            await upload_file(await image.read(), f"mailrender_api/{page_hash}.jpg")
 
         return web.json_response({
             "image_url": CDN_BASE + page_hash + ".jpg",
