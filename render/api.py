@@ -41,7 +41,7 @@ async def rootpage(request):
 async def upload_file(data: bytes, file_name: str):
     loop = asyncio.get_running_loop()
 
-    return await loop.run_in_executor(executor, bucket.files.upload, functools.partial(contents=data, file_name=file_name))
+    return await loop.run_in_executor(executor, functools.partial(bucket.files.upload, contents=data, file_name=file_name))
 
 @routes.post('/render')
 async def render_post(request):
