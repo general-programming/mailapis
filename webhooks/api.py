@@ -82,7 +82,7 @@ async def inbound_post(request):
     return web.json_response("ok")
 
 app = web.Application(
-    client_max_size=1024*16  # Default of 2MB crippled some emails. 16MB should be "enough"
+    client_max_size=1024*1024*16  # Default of 2MB crippled some emails. 16MB should be "enough"
 )
 app.add_routes(routes)
 

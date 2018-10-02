@@ -126,7 +126,7 @@ async def render_post(request):
         })
 
 app = web.Application(
-    client_max_size=1024*16  # Default of 2MB crippled some emails. 16MB should be "enough"
+    client_max_size=1024*1024*16  # Default of 2MB crippled some emails. 16MB should be "enough"
 )
 app.add_routes(routes)
 
