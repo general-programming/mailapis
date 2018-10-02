@@ -125,7 +125,9 @@ async def render_post(request):
             "raw_url": CDN_BASE + page_hash + ".html"
         })
 
-app = web.Application()
+app = web.Application(
+    client_max_size=1024*16  # Default of 2MB crippled some emails. 16MB should be "enough"
+)
 app.add_routes(routes)
 
 log.info("Render API started!")
