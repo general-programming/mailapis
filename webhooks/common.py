@@ -3,15 +3,15 @@ import hashlib
 import os
 import aiohttp
 
-async def push_mail(mail_image, mail_raw, subject="[Blank subject]", sender="[Blank sender]", sent=None):
-    # Sent date
-    if not sent:
-        sent = "[Missing mail time]"
+async def push_mail(mail_image, mail_raw, subject="[Blank subject]", sent_from="[Blank sender]", sent_to=None):
+    # Sent to mail
+    if not sent_to:
+        sent = "Sent to an unknown email"
     else:
-        sent = str(sent)
+        sent = f"Sent to {to}"
 
     # Gravatar URL
-    emails = re.findall(r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)", sender)
+    emails = re.findall(r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)", sent_from)
 
     if not emails:
         from_hash = "00000000000000000000000000000000"
@@ -30,7 +30,7 @@ async def push_mail(mail_image, mail_raw, subject="[Blank subject]", sender="[Bl
                     "title": subject,
                     "url": mail_raw,
                     "author": {
-                        "name": sender,
+                        "name": sent_from,
                         "url": mail_raw
                     },
                     "image": {

@@ -72,8 +72,8 @@ async def inbound_post(request):
         mail_image=mail_image,
         mail_raw=mail_raw,
         subject=data.get("subject", None),
-        sender=data.get("from", None),
-        sent=message.get_unixfrom()
+        sent_from=data.get("from", None),
+        sent_to=message.get_unixfrom(),
     )
 
     if push_status != 204:
